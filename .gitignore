@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+.runs/
+.evidence/
+.checkpoints/
+.replays/
+.verification/
+.review-packets/

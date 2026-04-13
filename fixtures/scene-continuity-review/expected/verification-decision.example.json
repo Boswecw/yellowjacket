@@ -1,0 +1,34 @@
+{
+  "artifact_id": "VerificationDecision-example",
+  "artifact_type": "VerificationDecision",
+  "schema_version": "1.1.0",
+  "run_id": "run-example",
+  "workcell_id": "scene-continuity-review",
+  "created_at": "2026-04-12T12:00:00.000Z",
+  "created_by_system": "yellowjacket-example",
+  "trace_id": "trace-run-example",
+  "verification_id": "VerificationDecision-example",
+  "verification_scope": "scene-continuity-review-full-run",
+  "verification_status": "pass_with_degradation",
+  "checks_performed": [
+    "schema",
+    "state_machine",
+    "review_packet_completeness"
+  ],
+  "failures": [],
+  "warnings": [
+    "one comparison pass timed out"
+  ],
+  "degraded_impact": [
+    "review completeness slightly reduced"
+  ],
+  "decision_summary": "Structurally valid and reviewable.",
+  "replay_refs": [
+    "replay-001"
+  ],
+  "drift_metrics": {
+    "semantic_drift": 0.08,
+    "coordination_cost_drift": 0.02,
+    "review_burden_drift": 0.01
+  }
+}

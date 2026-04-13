@@ -1,0 +1,282 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "runState": {
+      "type": "string",
+      "enum": [
+        "requested",
+        "admitted",
+        "planned",
+        "in_progress",
+        "awaiting_verification",
+        "verified_pass",
+        "verified_fail",
+        "packaged",
+        "awaiting_review",
+        "approved",
+        "rejected",
+        "cancelled",
+        "timed_out",
+        "degraded",
+        "failed",
+        "checkpointed",
+        "resumed"
+      ]
+    },
+    "artifactType": {
+      "type": "string",
+      "enum": [
+        "WorkcellRequest",
+        "WorkcellPlan",
+        "DependencyManifest",
+        "WorkerInvocation",
+        "WorkerResult",
+        "VerificationDecision",
+        "EvidenceBundle",
+        "ReviewPacket",
+        "RunTrace",
+        "DegradedStatus",
+        "PromotionProposal",
+        "CheckpointRecord",
+        "ResumeDecision"
+      ]
+    },
+    "trustDomain": {
+      "type": "string",
+      "enum": [
+        "local_internal_only",
+        "local_sensitive_review",
+        "local_restricted",
+        "future_cloud_eligible"
+      ]
+    },
+    "verificationOutcome": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "pass_with_degradation",
+        "fail",
+        "inconclusive"
+      ]
+    },
+    "verificationStatus": {
+      "type": "string",
+      "enum": [
+        "unverified",
+        "verified_pass",
+        "verified_fail",
+        "verified_inconclusive"
+      ]
+    },
+    "degradedStatusFamily": {
+      "type": "string",
+      "enum": [
+        "ready",
+        "degraded",
+        "unavailable",
+        "blocked",
+        "denied",
+        "stale",
+        "partial"
+      ]
+    },
+    "resumeStatus": {
+      "type": "string",
+      "enum": [
+        "resume_allowed",
+        "resume_blocked",
+        "resume_requires_review"
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "provenance_id",
+        "producer_type",
+        "producer_identity",
+        "model_family_or_system_component",
+        "produced_at",
+        "source_refs",
+        "verification_status",
+        "verification_method_refs",
+        "confidence_class",
+        "confidence_source",
+        "degraded_impact"
+      ],
+      "properties": {
+        "provenance_id": {
+          "type": "string"
+        },
+        "producer_type": {
+          "type": "string",
+          "enum": [
+            "model",
+            "system",
+            "human",
+            "hybrid"
+          ]
+        },
+        "producer_identity": {
+          "type": "string"
+        },
+        "model_family_or_system_component": {
+          "type": "string"
+        },
+        "produced_at": {
+          "type": "string"
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "verification_status": {
+          "$ref": "#/$defs/verificationStatus"
+        },
+        "verification_method_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidence_class": {
+          "type": "string"
+        },
+        "confidence_source": {
+          "type": "string"
+        },
+        "degraded_impact": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "baseArtifact": {
+      "type": "object",
+      "required": [
+        "artifact_id",
+        "artifact_type",
+        "schema_version",
+        "run_id",
+        "workcell_id",
+        "created_at",
+        "trace_id"
+      ],
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/$defs/artifactType"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "workcell_id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "created_by_role": {
+          "type": "string"
+        },
+        "created_by_system": {
+          "type": "string"
+        },
+        "trace_id": {
+          "type": "string"
+        },
+        "parent_artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "verification_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "degraded_flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "trust_domain": {
+          "$ref": "#/$defs/trustDomain"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "title": "WorkerInvocation",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "#/$defs/baseArtifact"
+    }
+  ],
+  "required": [
+    "artifact_type",
+    "invocation_id",
+    "role_id",
+    "step_index",
+    "input_artifact_ids",
+    "allowed_tools_or_dependencies",
+    "timeout_policy",
+    "retry_policy",
+    "capability_scope_ref"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "WorkerInvocation"
+    },
+    "invocation_id": {
+      "type": "string"
+    },
+    "role_id": {
+      "type": "string"
+    },
+    "step_index": {
+      "type": "integer"
+    },
+    "input_artifact_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowed_tools_or_dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "timeout_policy": {
+      "type": "string"
+    },
+    "retry_policy": {
+      "type": "string"
+    },
+    "capability_scope_ref": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

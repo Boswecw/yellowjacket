@@ -1,0 +1,6 @@
+{
+  "dependency": "neuronforge-local",
+  "event": "model_timeout",
+  "expected_operator_visible_summary": "Continuity comparison pass timed out. Findings may be incomplete.",
+  "expected_status_family": "partial"
+}

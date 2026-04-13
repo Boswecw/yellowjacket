@@ -1,0 +1,271 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "runState": {
+      "type": "string",
+      "enum": [
+        "requested",
+        "admitted",
+        "planned",
+        "in_progress",
+        "awaiting_verification",
+        "verified_pass",
+        "verified_fail",
+        "packaged",
+        "awaiting_review",
+        "approved",
+        "rejected",
+        "cancelled",
+        "timed_out",
+        "degraded",
+        "failed",
+        "checkpointed",
+        "resumed"
+      ]
+    },
+    "artifactType": {
+      "type": "string",
+      "enum": [
+        "WorkcellRequest",
+        "WorkcellPlan",
+        "DependencyManifest",
+        "WorkerInvocation",
+        "WorkerResult",
+        "VerificationDecision",
+        "EvidenceBundle",
+        "ReviewPacket",
+        "RunTrace",
+        "DegradedStatus",
+        "PromotionProposal",
+        "CheckpointRecord",
+        "ResumeDecision"
+      ]
+    },
+    "trustDomain": {
+      "type": "string",
+      "enum": [
+        "local_internal_only",
+        "local_sensitive_review",
+        "local_restricted",
+        "future_cloud_eligible"
+      ]
+    },
+    "verificationOutcome": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "pass_with_degradation",
+        "fail",
+        "inconclusive"
+      ]
+    },
+    "verificationStatus": {
+      "type": "string",
+      "enum": [
+        "unverified",
+        "verified_pass",
+        "verified_fail",
+        "verified_inconclusive"
+      ]
+    },
+    "degradedStatusFamily": {
+      "type": "string",
+      "enum": [
+        "ready",
+        "degraded",
+        "unavailable",
+        "blocked",
+        "denied",
+        "stale",
+        "partial"
+      ]
+    },
+    "resumeStatus": {
+      "type": "string",
+      "enum": [
+        "resume_allowed",
+        "resume_blocked",
+        "resume_requires_review"
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "provenance_id",
+        "producer_type",
+        "producer_identity",
+        "model_family_or_system_component",
+        "produced_at",
+        "source_refs",
+        "verification_status",
+        "verification_method_refs",
+        "confidence_class",
+        "confidence_source",
+        "degraded_impact"
+      ],
+      "properties": {
+        "provenance_id": {
+          "type": "string"
+        },
+        "producer_type": {
+          "type": "string",
+          "enum": [
+            "model",
+            "system",
+            "human",
+            "hybrid"
+          ]
+        },
+        "producer_identity": {
+          "type": "string"
+        },
+        "model_family_or_system_component": {
+          "type": "string"
+        },
+        "produced_at": {
+          "type": "string"
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "verification_status": {
+          "$ref": "#/$defs/verificationStatus"
+        },
+        "verification_method_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidence_class": {
+          "type": "string"
+        },
+        "confidence_source": {
+          "type": "string"
+        },
+        "degraded_impact": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "baseArtifact": {
+      "type": "object",
+      "required": [
+        "artifact_id",
+        "artifact_type",
+        "schema_version",
+        "run_id",
+        "workcell_id",
+        "created_at",
+        "trace_id"
+      ],
+      "properties": {
+        "artifact_id": {
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/$defs/artifactType"
+        },
+        "schema_version": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "workcell_id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "created_by_role": {
+          "type": "string"
+        },
+        "created_by_system": {
+          "type": "string"
+        },
+        "trace_id": {
+          "type": "string"
+        },
+        "parent_artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_artifact_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "verification_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "degraded_flags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "trust_domain": {
+          "$ref": "#/$defs/trustDomain"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "title": "ResumeDecision",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "#/$defs/baseArtifact"
+    }
+  ],
+  "required": [
+    "artifact_type",
+    "resume_decision_id",
+    "checkpoint_ref",
+    "resume_status",
+    "freshness_checks",
+    "dependency_revalidation_result",
+    "operator_visible_summary"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "ResumeDecision"
+    },
+    "resume_decision_id": {
+      "type": "string"
+    },
+    "checkpoint_ref": {
+      "type": "string"
+    },
+    "resume_status": {
+      "$ref": "#/$defs/resumeStatus"
+    },
+    "freshness_checks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dependency_revalidation_result": {
+      "type": "string"
+    },
+    "operator_visible_summary": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

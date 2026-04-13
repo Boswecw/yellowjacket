@@ -1,0 +1,11 @@
+{
+  "checkpoint_id": "CheckpointRecord-example",
+  "run_id": "run-example",
+  "checkpoint_state": "checkpointed",
+  "resumable_from_state": true,
+  "dependency_health_snapshot": {
+    "cortex": "ready",
+    "neuronforge-local": "degraded"
+  },
+  "note": "Resume should require freshness checks."
+}

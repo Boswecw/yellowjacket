@@ -1,0 +1,30 @@
+{
+  "artifact_id": "ReviewPacket-example",
+  "artifact_type": "ReviewPacket",
+  "schema_version": "1.1.0",
+  "run_id": "run-example",
+  "workcell_id": "scene-continuity-review",
+  "created_at": "2026-04-12T12:00:00.000Z",
+  "created_by_system": "yellowjacket-example",
+  "trace_id": "trace-run-example",
+  "review_packet_id": "ReviewPacket-example",
+  "run_status": "packaged",
+  "verification_status": "pass_with_degradation",
+  "degraded_status_summary": "Cortex source preparation succeeded, but one comparison pass was skipped after a model timeout.",
+  "finding_summary": "Potential continuity issue: weather and glove-state references should be checked against adjacent scenes.",
+  "candidate_outputs": [
+    "finding-001",
+    "finding-002"
+  ],
+  "evidence_bundle_refs": [
+    "EvidenceBundle-example"
+  ],
+  "operator_actions": [
+    "accept_finding",
+    "reject_finding",
+    "request_more_evidence"
+  ],
+  "baseline_comparison_summary": "The coordinated review found more cross-scene references than the single-pass baseline, but took longer.",
+  "policy_snippet": "Candidate artifacts only. Human review required.",
+  "provenance_summary": "Evidence sourced from scene files and generated review artifacts."
+}
