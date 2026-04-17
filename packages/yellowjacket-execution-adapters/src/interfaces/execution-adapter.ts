@@ -1,15 +1,12 @@
+import type { InvocationPacketV1 } from "../contracts/invocation-packet";
+import type { ProviderCapabilitiesV1 } from "../contracts/provider-capabilities";
+import type { ProviderReceiptV1 } from "../contracts/provider-receipt";
+import type { ReviewPacketV1 } from "../contracts/review-packet";
+import type { ProviderExecutionState, RuntimeLifecycleState } from "../contracts/runtime-status";
+
 export type ProviderType = "hermes_local";
 
 export type ProviderHealthState = "ready" | "degraded" | "unavailable";
-
-export type ProviderStatus =
-  | "accepted"
-  | "running"
-  | "completed"
-  | "rejected"
-  | "degraded"
-  | "failed"
-  | "cancelled";
 
 export type ProviderErrorFamily =
   | "transport_error"
@@ -28,72 +25,31 @@ export interface ProviderHealthSnapshot {
   checkedAt: string;
   supportedProfiles: string[];
   unsupportedFeatures: string[];
-}
-
-export interface ProviderReceipt {
-  providerReceiptId: string;
-  providerType: ProviderType;
-  providerRunId: string;
-  providerRequestId: string;
-  providerVersion: string;
-  submittedAt: string;
-  completedAt?: string;
-  providerStatus: ProviderStatus;
-  providerErrorCodes: string[];
-  providerDegradedFlags: string[];
-  costOrResourceSummary: Record<string, string | number | boolean | null>;
+  capabilities?: ProviderCapabilitiesV1;
 }
 
 export interface ProviderProgressSnapshot {
   providerRunId: string;
-  providerStatus: ProviderStatus;
+  providerStatus: ProviderExecutionState;
+  lifecycleState: RuntimeLifecycleState;
   progressMessage?: string;
   updatedAt: string;
 }
 
-export interface NormalizedProviderResult {
-  providerReceiptRef: string;
-  providerStatus: ProviderStatus;
-  normalizationStatus: "normalized" | "failed";
-  summary: string;
-  evidenceRefs: string[];
-  rawResultRef?: string;
-}
-
-export interface HermesInvocationPacket {
-  invocationId: string;
-  providerType: ProviderType;
-  executionTicketRef: string;
-  roleId: string;
-  allowedSkillIds: string[];
-  allowedToolClasses: string[];
-  timeoutMs: number;
-  retryRule: string;
-  memoryPosture: "none" | "reserved_for_future";
-  subagentPosture: "forbidden" | "reserved_for_future";
-  traceCorrelation: {
-    runId: string;
-    workcellId: string;
-    requestOrigin: string;
-  };
-  inputPayload: Record<string, unknown>;
-}
-
 export interface HermesResultPayload {
   providerRunId: string;
-  providerStatus: ProviderStatus;
+  providerStatus: ProviderExecutionState;
   outputPayload: Record<string, unknown>;
   degradedFlags: string[];
 }
 
+export type ProviderReceipt = ProviderReceiptV1;
+
 export interface ExecutionAdapter {
   probeHealth(): Promise<ProviderHealthSnapshot>;
-  submitInvocation(packet: HermesInvocationPacket): Promise<ProviderReceipt>;
+  submitInvocation(packet: InvocationPacketV1): Promise<ProviderReceiptV1>;
   pollInvocation(providerRunId: string): Promise<ProviderProgressSnapshot>;
   collectResult(providerRunId: string): Promise<HermesResultPayload>;
-  cancelInvocation(providerRunId: string, reason: string): Promise<ProviderReceipt>;
-  normalizeResult(
-    payload: HermesResultPayload,
-    profileId: string,
-  ): Promise<NormalizedProviderResult>;
+  cancelInvocation(providerRunId: string, reason: string): Promise<ProviderReceiptV1>;
+  normalizeResult(payload: HermesResultPayload, profileId: string): Promise<ReviewPacketV1>;
 }
