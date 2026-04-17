@@ -1,23 +1,14 @@
 {
-  "name": "yellowjacket-initial-setup",
+  "name": "yellowjacket",
   "private": true,
-  "version": "1.1.0",
-  "description": "YellowJacket v1.1 initial setup scaffold",
+  "packageManager": "bun@1.2.15",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "build": "npm run typecheck",
-    "bootstrap": "bash ./scripts/bootstrap.sh"
+    "typecheck": "bunx tsc -p packages/yellowjacket-execution-adapters/tsconfig.json --noEmit"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
-    "ajv": "^8.17.1",
-    "ajv-formats": "^3.0.1",
-    "typescript": "^5.8.3",
-    "vitest": "^3.2.4"
+    "typescript": "^5.8.3"
   }
 }

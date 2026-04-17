@@ -1,26 +1,14 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "lib": ["ES2022"],
-    "types": ["node"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+    "declaration": true,
+    "declarationMap": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "declaration": false,
-    "sourceMap": false,
-    "baseUrl": ".",
-    "paths": {
-      "@yellowjacket/contracts": ["packages/yellowjacket-contracts/src/index.ts"],
-      "@yellowjacket/core": ["packages/yellowjacket-core/src/index.ts"],
-      "@yellowjacket/workcells": ["packages/yellowjacket-workcells/src/index.ts"],
-      "@yellowjacket/verification": ["packages/yellowjacket-verification/src/index.ts"],
-      "@yellowjacket/domain-packs": ["packages/yellowjacket-domain-packs/src/index.ts"],
-      "@yellowjacket/app-bindings": ["packages/yellowjacket-app-bindings/src/index.ts"]
-    }
+    "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true
   }
 }
