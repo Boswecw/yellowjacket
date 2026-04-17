@@ -1,5 +1,4 @@
 import type { InvocationPacketV1 } from "../contracts/invocation-packet";
-import type { ProviderCapabilitiesV1 } from "../contracts/provider-capabilities";
 import type { ProviderReceiptV1 } from "../contracts/provider-receipt";
 import type { ReviewPacketV1 } from "../contracts/review-packet";
 import type {
@@ -8,94 +7,99 @@ import type {
   ProviderHealthSnapshot,
   ProviderProgressSnapshot,
 } from "../interfaces/execution-adapter";
-import { mapHermesResultToReviewPacket, mapInvocationToHermesPacket } from "./mapper";
+import { normalizeBaseUrl, type HermesLocalClientConfig } from "./config";
+import { buildHeaders, getJson, joinUrl, postJson, type FetchLike } from "./http";
+import {
+  mapHermesCancelToReceipt,
+  mapHermesCollectToResult,
+  mapHermesHealthToSnapshot,
+  mapHermesResultToReviewPacket,
+  mapHermesSubmitToReceipt,
+  mapHermesPollToProgress,
+  mapInvocationToHermesPacket,
+} from "./mapper";
+import type {
+  HermesCancelRequest,
+  HermesCancelResponse,
+  HermesCollectResponse,
+  HermesHealthEndpointResponse,
+  HermesInvocationSubmitRequest,
+  HermesInvocationSubmitResponse,
+  HermesPollResponse,
+} from "./protocol";
 
 export class HermesLocalHttpClient implements ExecutionAdapter {
-  constructor(private readonly baseUrl: string) {}
+  private readonly baseUrl: string;
+
+  constructor(
+    config: HermesLocalClientConfig,
+    private readonly fetcher: FetchLike,
+  ) {
+    this.baseUrl = normalizeBaseUrl(config.baseUrl);
+    this.apiKey = config.apiKey;
+  }
+
+  private readonly apiKey?: string;
 
   async probeHealth(): Promise<ProviderHealthSnapshot> {
-    const capabilities: ProviderCapabilitiesV1 = {
-      schemaVersion: "provider_capabilities.v1",
-      providerType: "hermes_local",
-      supportedRoleIds: [],
-      supportedProfiles: [],
-      memorySupport: "unsupported",
-      subagentSupport: "unsupported",
-      scheduleAwareness: "none",
-      replayAwareness: "none",
-      approvalAwareness: "none",
-      outputModes: ["structured_receipt", "structured_review_packet"],
-      maxTimeoutMs: 0,
-    };
+    const response = await getJson<HermesHealthEndpointResponse>(
+      this.fetcher,
+      joinUrl(this.baseUrl, "/health"),
+      buildHeaders(this.apiKey),
+    );
 
-    return {
-      providerType: "hermes_local",
-      providerVersion: "phase-2-contracts",
-      healthState: "unavailable",
-      reasonCodes: ["not_implemented"],
-      checkedAt: new Date().toISOString(),
-      supportedProfiles: [],
-      unsupportedFeatures: ["live_http_transport"],
-      capabilities,
-    };
+    return mapHermesHealthToSnapshot(response, new Date().toISOString());
   }
 
   async submitInvocation(packet: InvocationPacketV1): Promise<ProviderReceiptV1> {
-    const normalizedPacket = mapInvocationToHermesPacket(packet);
-
-    return {
-      schemaVersion: "provider_receipt.v1",
-      receiptId: `${normalizedPacket.packetId}-receipt`,
-      packetRef: normalizedPacket.packetId,
-      providerType: "hermes_local",
-      providerRunId: `${normalizedPacket.invocationId}-run`,
-      providerRequestId: normalizedPacket.invocationId,
-      providerVersion: "phase-2-contracts",
-      submittedAt: new Date().toISOString(),
-      providerStatus: "accepted",
-      lifecycleState: "admitted",
-      providerErrorCodes: [],
-      providerDegradedFlags: ["not_implemented"],
-      costOrResourceSummary: {},
+    const request: HermesInvocationSubmitRequest = {
+      packet: mapInvocationToHermesPacket(packet),
     };
+
+    const response = await postJson<HermesInvocationSubmitRequest, HermesInvocationSubmitResponse>(
+      this.fetcher,
+      joinUrl(this.baseUrl, "/invocations"),
+      request,
+      buildHeaders(this.apiKey),
+    );
+
+    return mapHermesSubmitToReceipt(packet, response, new Date().toISOString());
   }
 
   async pollInvocation(providerRunId: string): Promise<ProviderProgressSnapshot> {
-    return {
-      providerRunId,
-      providerStatus: "degraded",
-      lifecycleState: "executing",
-      progressMessage: "Phase 2 contract placeholder only",
-      updatedAt: new Date().toISOString(),
-    };
+    const response = await getJson<HermesPollResponse>(
+      this.fetcher,
+      joinUrl(this.baseUrl, `/invocations/${providerRunId}`),
+      buildHeaders(this.apiKey),
+    );
+
+    return mapHermesPollToProgress(response, new Date().toISOString());
   }
 
   async collectResult(providerRunId: string): Promise<HermesResultPayload> {
-    return {
-      providerRunId,
-      providerStatus: "degraded",
-      outputPayload: {},
-      degradedFlags: ["not_implemented"],
-    };
+    const response = await getJson<HermesCollectResponse>(
+      this.fetcher,
+      joinUrl(this.baseUrl, `/invocations/${providerRunId}/result`),
+      buildHeaders(this.apiKey),
+    );
+
+    return mapHermesCollectToResult(response);
   }
 
-  async cancelInvocation(providerRunId: string, _reason: string): Promise<ProviderReceiptV1> {
-    return {
-      schemaVersion: "provider_receipt.v1",
-      receiptId: `${providerRunId}-cancel-receipt`,
-      packetRef: providerRunId,
-      providerType: "hermes_local",
+  async cancelInvocation(providerRunId: string, reason: string): Promise<ProviderReceiptV1> {
+    const request: HermesCancelRequest = {
       providerRunId,
-      providerRequestId: providerRunId,
-      providerVersion: "phase-2-contracts",
-      submittedAt: new Date().toISOString(),
-      completedAt: new Date().toISOString(),
-      providerStatus: "cancelled",
-      lifecycleState: "closed",
-      providerErrorCodes: [],
-      providerDegradedFlags: [],
-      costOrResourceSummary: {},
+      reason,
     };
+
+    const response = await postJson<HermesCancelRequest, HermesCancelResponse>(
+      this.fetcher,
+      joinUrl(this.baseUrl, `/invocations/${providerRunId}/cancel`),
+      request,
+      buildHeaders(this.apiKey),
+    );
+
+    return mapHermesCancelToReceipt(providerRunId, response, new Date().toISOString());
   }
 
   async normalizeResult(payload: HermesResultPayload, profileId: string): Promise<ReviewPacketV1> {
